@@ -33,16 +33,18 @@ CHECKING_COLOR = BLUE
 SUCCESS_COLOR = GREEN
 FAILURE_COLOR = RED
 
+FIRST_THRESHOLD = 5  # minutes, WHITE lights before this
+SECOND_THRESHOLD = 2  # minutes, YELLOW lights before this
+
 
 #### GLOBAL VARIABLES
 reboot_counter = 0  # counter variable, tracks retry events.
 has_error = False
 
 
-#### CALENDAR FUNCTIONS
+#### CALENDAR FUNCTIONS (https://developers.google.com/google-apps/calendar/quickstart/python)
 
 def get_credentials():
- # taken from https://developers.google.com/google-apps/calendar/quickstart/python
     creds = None
 
     if os.path.exists('token.pickle'):
@@ -56,7 +58,6 @@ def get_credentials():
             flow = InstalledAppFlow.from_client_secrets_file(
                 'credentials.json', SCOPES)
             creds = flow.run_local_server(port=0)
-        # Save the credentials for the next run
         with open('token.pickle', 'wb') as token:
             pickle.dump(creds, token)
             return creds
@@ -95,15 +96,6 @@ def get_event_with_reminder(event_list):
                     event['num_minutes'] = time_delta.total_seconds() // 60
                     return event
 
-# def print_events(events):
-#     print('Getting the upcoming 10 events')
-#     if not events:
-#         print('No upcoming events found.')
-#     for event in events:
-#         start = event['start'].get('dateTime', event['start'].get('date'))
-#         print(start, event['summary'])
-#         print(has_reminder_override(event))
-
 
 def has_reminder_override(event):
     has_default_reminder = event['reminders'].get('useDefault')
@@ -117,10 +109,6 @@ def has_reminder_override(event):
 
 
 
-
-
-# this is pasted from github
-# TODO: adapt to blinkt, etc.
 def get_next_event(num_minutes):
     global has_error
     global reboot_counter
@@ -130,15 +118,14 @@ def get_next_event(num_minutes):
     try:
         creds = get_credentials()
         event_list = get_events(creds, num_minutes)
-        flash_all(SUCCESS_COLOR)
-
+#         flash_all(SUCCESS_COLOR)
         has_error = False
         reboot_counter = 0;
         if not event_list:
             print(datetime.datetime.now(), 'No entries returned')
             return None
         else:
-            get_event_with_reminder(event_list)
+            return get_event_with_reminder(event_list)
     except Exception as e:
         print('\nException type:', type(e))
         print('Error:', sys.exc_info()[0])
@@ -159,25 +146,54 @@ def get_next_event(num_minutes):
 
 #### LIGHT FUNCTIONS
         
-def flash_light():
-    while True:
-        for i in range(8):
-            clear()
-            set_pixel(i, 255, 0, 0)
-            show()
-            time.sleep(0.05)
-
-
 def flash_all(color):
     clear()
     set_all(color[0], color[1], color[2], 0.1)
     show()
     time.sleep(1)
     clear()
-
-
-def main():
-    get_next_event(10)
+    show()
     
+    
+def main():
+#     get_next_event(10)
+    
+    last_minute = datetime.datetime.now().minute
+    # on startup, just use the previous minute as lastMinute
+    if last_minute == 0:
+        last_minute = 59
+    else:
+        last_minute -= 1
+        
+    # infinite loop to continuously check Google Calendar for future entries
+    while 1:
+        current_minute = datetime.datetime.now().minute
+        if current_minute != last_minute:
+            last_minute = current_minute
+            next_event = get_next_event(10)
+            if next_event is not None:
+                num_minutes = next_event['num_minutes']
+                if num_minutes != 1:
+                    print('Starts in {} minutes\n'.format(num_minutes))
+                else:
+                    print('Starts in 1.0 minute\n')
+
+                if num_minutes >= FIRST_THRESHOLD:
+                    flash_all(WHITE)
+
+                elif num_minutes > SECOND_THRESHOLD:
+                    flash_all(YELLOW)
+
+                else:
+                    flash_all(RED)
+
+        time.sleep(2)
+           
+print('STARTING UP THE PI REMINDER')
+
 if __name__ == '__main__':
-    main() 
+    try:
+        main()
+    except KeyboardInterrupt:
+        print('\nSee you later!\n')
+        sys.exit(0) 
