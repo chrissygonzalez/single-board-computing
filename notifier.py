@@ -1,7 +1,7 @@
 from __future__ import print_function
 import datetime
 import pickle
-import os.path
+import os
 import sys
 import time
 import pytz
@@ -129,7 +129,7 @@ def get_next_event(num_minutes):
     except Exception as e:
         print('\nException type:', type(e))
         print('Error:', sys.exc_info()[0])
-        flash_all(FAILURE_COLOR)
+#         flash_all(FAILURE_COLOR)
         has_error = True
         if REBOOT_COUNTER_ENABLED:
             reboot_counter += 1
@@ -144,7 +144,12 @@ def get_next_event(num_minutes):
     return None
 
 
-#### LIGHT FUNCTIONS
+#### LIGHT & SOUNDFUNCTIONS
+
+def beep():
+    beepcmd = "play -n synth 0.3 sine A 2>/dev/null"
+    os.system(beepcmd)
+    
         
 def flash_all(color):
     clear()
@@ -179,13 +184,19 @@ def main():
                     print('Starts in 1.0 minute\n')
 
                 if num_minutes >= FIRST_THRESHOLD:
-                    flash_all(WHITE)
+                    beep()
+#                     flash_all(WHITE)
 
                 elif num_minutes > SECOND_THRESHOLD:
-                    flash_all(YELLOW)
+                    beep()
+                    beep()
+#                     flash_all(YELLOW)
 
                 else:
-                    flash_all(RED)
+#                     flash_all(RED)
+                    beep()
+                    beep()
+                    beep()
 
         time.sleep(2)
            
