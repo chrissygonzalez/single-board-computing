@@ -6,6 +6,7 @@ import sys
 import time
 import pytz
 from dateutil import parser
+from subprocess import call
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -184,19 +185,22 @@ def main():
                     print('Starts in 1.0 minute\n')
 
                 if num_minutes >= FIRST_THRESHOLD:
-                    beep()
+#                     beep()
+                    call(['espeak "ten minutes" 2>/dev/null'], shell=True)
 #                     flash_all(WHITE)
 
                 elif num_minutes > SECOND_THRESHOLD:
-                    beep()
-                    beep()
+                    call(['espeak "five minutes" 2>/dev/null'], shell=True)
+#                     beep()
+#                     beep()
 #                     flash_all(YELLOW)
 
                 else:
+                    call(['espeak "two minutes" 2>/dev/null'], shell=True)
 #                     flash_all(RED)
-                    beep()
-                    beep()
-                    beep()
+#                     beep()
+#                     beep()
+#                     beep()
 
         time.sleep(2)
            
