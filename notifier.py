@@ -23,16 +23,16 @@ SECOND_ALERT = 2
 REBOOT_COUNTER_ENABLED = False
 REBOOT_NUM_RETRIES = 10
 
-RED = (255, 0, 0)
-GREEN = (0, 255, 0)
-BLUE = (0, 0, 255)
-ORANGE = (255, 153, 0)
-WHITE = (255, 255, 255)
-YELLOW = (255, 255, 0)
-
-CHECKING_COLOR = BLUE
-SUCCESS_COLOR = GREEN
-FAILURE_COLOR = RED
+# RED = (255, 0, 0)
+# GREEN = (0, 255, 0)
+# BLUE = (0, 0, 255)
+# ORANGE = (255, 153, 0)
+# WHITE = (255, 255, 255)
+# YELLOW = (255, 255, 0)
+# 
+# CHECKING_COLOR = BLUE
+# SUCCESS_COLOR = GREEN
+# FAILURE_COLOR = RED
 
 FIRST_THRESHOLD = 5  # minutes, WHITE lights before this
 SECOND_THRESHOLD = 2  # minutes, YELLOW lights before this
@@ -145,12 +145,20 @@ def get_next_event(num_minutes):
     return None
 
 
-#### LIGHT & SOUNDFUNCTIONS
+#### LIGHT & SOUND FUNCTIONS
 
 def beep():
     beepcmd = "play -n synth 0.3 sine A 2>/dev/null"
     os.system(beepcmd)
     
+def speak_reminder(num_minutes, summary):
+    cmd_beg = 'espeak -ven-us -s120 '
+    cmd_end = ' 2>/dev/null'
+    num = int(num_minutes)
+    num_str = str(num)
+    words = summary + " starts in " + num_str + " minutes"
+    words = words.replace(' ','_')
+    call([cmd_beg + words + cmd_end], shell=True)
         
 def flash_all(color):
     clear()
@@ -162,8 +170,6 @@ def flash_all(color):
     
     
 def main():
-#     get_next_event(10)
-    
     last_minute = datetime.datetime.now().minute
     # on startup, just use the previous minute as lastMinute
     if last_minute == 0:
@@ -179,28 +185,19 @@ def main():
             next_event = get_next_event(10)
             if next_event is not None:
                 num_minutes = next_event['num_minutes']
-                if num_minutes != 1:
-                    print('Starts in {} minutes\n'.format(num_minutes))
-                else:
-                    print('Starts in 1.0 minute\n')
+                summary = next_event['summary'] if 'summary' in next_event else 'No Title'
+                print(num_minutes)
+                if num_minutes == 10.0:
+                    beep()
+                    speak_reminder(num_minutes, summary)
 
-                if num_minutes >= FIRST_THRESHOLD:
-#                     beep()
-                    call(['espeak "ten minutes" 2>/dev/null'], shell=True)
-#                     flash_all(WHITE)
+                elif num_minutes == 5.0:
+                    beep()
+                    speak_reminder(num_minutes, summary)
 
-                elif num_minutes > SECOND_THRESHOLD:
-                    call(['espeak "five minutes" 2>/dev/null'], shell=True)
-#                     beep()
-#                     beep()
-#                     flash_all(YELLOW)
-
-                else:
-                    call(['espeak "two minutes" 2>/dev/null'], shell=True)
-#                     flash_all(RED)
-#                     beep()
-#                     beep()
-#                     beep()
+                elif num_minutes == 2.0:
+                    beep()
+                    speak_reminder(num_minutes, summary)
 
         time.sleep(2)
            
