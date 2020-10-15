@@ -14,28 +14,14 @@ from blinkt import set_pixel, set_all, set_brightness, show, clear
 
 
 #### CONSTANTS
-
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
 CALENDAR_ID = 'family11329664508214213018@group.calendar.google.com'
-FIRST_ALERT = 5
-SECOND_ALERT = 2
+FIRST_ALERT = 9
+SECOND_ALERT = 4
+THIRD_ALERT = 1
 
 REBOOT_COUNTER_ENABLED = False
 REBOOT_NUM_RETRIES = 10
-
-# RED = (255, 0, 0)
-# GREEN = (0, 255, 0)
-# BLUE = (0, 0, 255)
-# ORANGE = (255, 153, 0)
-# WHITE = (255, 255, 255)
-# YELLOW = (255, 255, 0)
-# 
-# CHECKING_COLOR = BLUE
-# SUCCESS_COLOR = GREEN
-# FAILURE_COLOR = RED
-
-FIRST_THRESHOLD = 5  # minutes, WHITE lights before this
-SECOND_THRESHOLD = 2  # minutes, YELLOW lights before this
 
 
 #### GLOBAL VARIABLES
@@ -151,6 +137,18 @@ def beep():
     beepcmd = "play -n synth 0.3 sine A 2>/dev/null"
     os.system(beepcmd)
     
+def unconvinced():
+    notifycmd = "play unconvinced-569.mp3 2>/dev/null"
+    os.system(notifycmd)
+    
+def quiteimpressed():
+    notifycmd = "play quite-impressed-565.mp3 2>/dev/null"
+    os.system(notifycmd)
+    
+def holdon():
+    notifycmd = "play hold-on-560.mp3 2>/dev/null"
+    os.system(notifycmd)
+    
 def speak_reminder(num_minutes, summary):
     cmd_beg = 'espeak -ven-us -s120 '
     cmd_end = ' 2>/dev/null'
@@ -160,14 +158,6 @@ def speak_reminder(num_minutes, summary):
     words = words.replace(' ','_')
     call([cmd_beg + words + cmd_end], shell=True)
         
-def flash_all(color):
-    clear()
-    set_all(color[0], color[1], color[2], 0.1)
-    show()
-    time.sleep(1)
-    clear()
-    show()
-    
     
 def main():
     last_minute = datetime.datetime.now().minute
@@ -182,22 +172,25 @@ def main():
         current_minute = datetime.datetime.now().minute
         if current_minute != last_minute:
             last_minute = current_minute
-            next_event = get_next_event(10)
+            next_event = get_next_event(11)
             if next_event is not None:
                 num_minutes = next_event['num_minutes']
                 summary = next_event['summary'] if 'summary' in next_event else 'No Title'
                 print(num_minutes)
-                if num_minutes == 10.0:
-                    beep()
-                    speak_reminder(num_minutes, summary)
+                if num_minutes == FIRST_ALERT:
+                    unconvinced()
+                    time_until = num_minutes + 1
+                    speak_reminder(time_until, summary)
 
-                elif num_minutes == 5.0:
-                    beep()
-                    speak_reminder(num_minutes, summary)
+                elif num_minutes == SECOND_ALERT:
+                    quiteimpressed()
+                    time_until = num_minutes + 1
+                    speak_reminder(time_until, summary)
 
-                elif num_minutes == 2.0:
-                    beep()
-                    speak_reminder(num_minutes, summary)
+                elif num_minutes == THIRD_ALERT:
+                    holdon()
+                    time_until = num_minutes + 1
+                    speak_reminder(time_until, summary)
 
         time.sleep(2)
            
