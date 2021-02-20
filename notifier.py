@@ -71,23 +71,28 @@ def get_event_with_reminder(event_list):
 
     for event in event_list:
         start = event['start'].get('dateTime')
+        event_summary = event['summary'] if 'summary' in event else 'No Title'
         if start:
             event_start = parser.parse(start)
             print(event_start)
             if current_time < event_start:
-                if has_reminder_override(event):
-                    event_summary = event['summary'] if 'summary' in event else 'No Title'
+                if has_reminder(event):
                     print('Found event:', event_summary)
                     print('Event starts:', start)
                     time_delta = event_start - current_time
                     event['num_minutes'] = time_delta.total_seconds() // 60
                     return event
+                else:
+                    print(event_summary, 'has no reminder set')
+            else:
+                print(event_summary, 'is in progress')
 
 
-def has_reminder_override(event):
+def has_reminder(event):
     has_default_reminder = event['reminders'].get('useDefault')
+    
     if has_default_reminder:
-        return False
+        return True
     else:
         overrides = event['reminders'].get('overrides')
         if overrides:
