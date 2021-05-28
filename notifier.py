@@ -19,11 +19,11 @@ FIRST_ALERT = 9
 SECOND_ALERT = 4
 THIRD_ALERT = 1
 LOOP_INTERVAL = 2 # time to rerun loop in seconds
-LOOP_MAX = 5 # number of minutes between event refetches
+LOOP_MAX = 6 # number of minutes between event refetches
 CALENDAR_DEFAULT_HAS_REMINDER = True # if calendar sets a notification by default, set to True
 
 #### GLOBAL VARIABLES
-loop_counter = 0
+loop_counter = 0 # only 0 for the first loop, then 1 through LOOP_MAX
 event_list = []
 
 
@@ -120,7 +120,7 @@ def get_next_event(): # calls get_events, checks events for reminder
         if loop_counter == 0:
             loop_counter += 1
         else:
-            loop_counter = 0
+            loop_counter = 1
 
         if not event_list:
             print(datetime.datetime.now(), 'No entries returned')
