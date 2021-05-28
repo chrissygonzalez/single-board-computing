@@ -117,7 +117,8 @@ def get_next_event(): # calls get_events, checks events for reminder
         print('Getting fresh list of events', loop_counter)
         creds = get_credentials()
         event_list = get_events(creds, 15)
-        loop_counter = 0
+        if loop_counter == 0:
+            loop_counter += 1
         if not event_list:
             print(datetime.datetime.now(), 'No entries returned')
             return None
