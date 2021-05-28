@@ -104,7 +104,7 @@ def get_next_event(): # calls get_events, checks events for reminder
 
     print(datetime.datetime.now().strftime('%a %b %d %I:%M:%S%p'), 'Getting next event')
 
-    if loop_counter < LOOP_MAX:
+    if loop_counter < LOOP_MAX and loop_counter != 0:
         loop_counter += 1
         if not event_list:
             print(datetime.datetime.now(), 'No entries returned')
