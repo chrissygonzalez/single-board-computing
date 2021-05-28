@@ -10,7 +10,6 @@ from subprocess import call
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
-from blinkt import set_pixel, set_all, set_brightness, show, clear
 
 
 #### CONSTANTS
@@ -19,14 +18,13 @@ CALENDAR_ID = 'family11329664508214213018@group.calendar.google.com'
 FIRST_ALERT = 9
 SECOND_ALERT = 4
 THIRD_ALERT = 1
-
-REBOOT_COUNTER_ENABLED = False
-REBOOT_NUM_RETRIES = 10
-
+LOOP_INTERVAL = 2 # time to rerun loop in seconds
+LOOP_MAX = 450 # 30 loops per min * 15 min
+CALENDAR_DEFAULT_HAS_REMINDER = True # if calendar sets a notification by default, set to True
 
 #### GLOBAL VARIABLES
-reboot_counter = 0  # counter variable, tracks retry events.
-has_error = False
+loop_counter = 0
+event_list = []
 
 
 #### CALENDAR FUNCTIONS (https://developers.google.com/google-apps/calendar/quickstart/python)
@@ -50,7 +48,7 @@ def get_credentials():
             return creds
  
  
-def get_events(creds, num_minutes):
+def get_events(creds, num_minutes): # gets up to 10 events from Google Calendar
     service = build('calendar', 'v3', credentials=creds)
 
     now = datetime.datetime.utcnow()
@@ -66,7 +64,19 @@ def get_events(creds, num_minutes):
     return events
 
 
-def get_event_with_reminder(event_list):
+def has_reminder(event): # checks whether an event has a reminder
+    has_default_reminder = event['reminders'].get('useDefault')
+    
+    if has_default_reminder:
+        return CALENDAR_DEFAULT_HAS_REMINDER
+    else:
+        overrides = event['reminders'].get('overrides')
+        if overrides:
+            return True
+    return False
+
+
+def get_event_status(event_list): # checks results from get_events for reminders
     current_time = pytz.utc.localize(datetime.datetime.utcnow())
 
     for event in event_list:
@@ -88,55 +98,37 @@ def get_event_with_reminder(event_list):
                 print(event_summary, 'is in progress')
 
 
-def has_reminder(event):
-    has_default_reminder = event['reminders'].get('useDefault')
-    
-    if has_default_reminder:
-        return True
-    else:
-        overrides = event['reminders'].get('overrides')
-        if overrides:
-            return True
-    return False
-
-
-
-def get_next_event(num_minutes):
-    global has_error
-    global reboot_counter
+def get_next_event(): # calls get_events, checks events for reminder
+    global event_list
+    global loop_counter
 
     print(datetime.datetime.now().strftime('%a %b %d %I:%M:%S%p'), 'Getting next event')
 
-    try:
-        creds = get_credentials()
-        event_list = get_events(creds, num_minutes)
-#         flash_all(SUCCESS_COLOR)
-        has_error = False
-        reboot_counter = 0;
+    if loop_counter < LOOP_MAX:
+        loop_counter += 1
         if not event_list:
             print(datetime.datetime.now(), 'No entries returned')
             return None
         else:
-            return get_event_with_reminder(event_list)
+            return get_event_status(event_list)
+
+    try:
+        creds = get_credentials()
+        event_list = get_events(creds, 15)
+        loop_counter = 0
+        if not event_list:
+            print(datetime.datetime.now(), 'No entries returned')
+            return None
+        else:
+            return get_event_status(event_list)
     except Exception as e:
         print('\nException type:', type(e))
         print('Error:', sys.exc_info()[0])
-#         flash_all(FAILURE_COLOR)
-        has_error = True
-        if REBOOT_COUNTER_ENABLED:
-            reboot_counter += 1
-            print('Incrementing the reboot counter ({})'.format(reboot_counter))
-            if reboot_counter == REBOOT_NUM_RETRIES:
-                # Reboot the Pi
-                for i in range(1, 10):
-                    print('Rebooting in {} seconds'.format(i))
-                    time.sleep(1)
-                os.system("sudo reboot")
 
     return None
 
 
-#### LIGHT & SOUND FUNCTIONS
+#### SOUND FUNCTIONS
 
 def beep():
     beepcmd = "play -n synth 0.3 sine A 2>/dev/null"
@@ -197,7 +189,7 @@ def main():
                     time_until = num_minutes + 1
                     speak_reminder(time_until, summary)
 
-        time.sleep(2)
+        time.sleep(LOOP_INTERVAL) # param is num seconds
            
 print('STARTING UP THE PI REMINDER')
 
@@ -206,4 +198,4 @@ if __name__ == '__main__':
         main()
     except KeyboardInterrupt:
         print('\nSee you later!\n')
-        sys.exit(0) 
+        sys.exit(0)
