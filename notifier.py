@@ -19,7 +19,7 @@ FIRST_ALERT = 9
 SECOND_ALERT = 4
 THIRD_ALERT = 1
 LOOP_INTERVAL = 2 # time to rerun loop in seconds
-LOOP_MAX = 450 # 30 loops per min * 15 min
+LOOP_MAX = 15 # 15 min
 CALENDAR_DEFAULT_HAS_REMINDER = True # if calendar sets a notification by default, set to True
 
 #### GLOBAL VARIABLES
