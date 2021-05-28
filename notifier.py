@@ -119,6 +119,9 @@ def get_next_event(): # calls get_events, checks events for reminder
         event_list = get_events(creds, 15)
         if loop_counter == 0:
             loop_counter += 1
+        else:
+            loop_counter = 0
+            
         if not event_list:
             print(datetime.datetime.now(), 'No entries returned')
             return None
