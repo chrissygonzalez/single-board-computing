@@ -105,6 +105,7 @@ def get_next_event(): # calls get_events, checks events for reminder
     print(datetime.datetime.now().strftime('%a %b %d %I:%M:%S%p'), 'Getting next event')
 
     if loop_counter < LOOP_MAX and loop_counter != 0:
+        print('Using previously fetched events', loop_counter)
         loop_counter += 1
         if not event_list:
             print(datetime.datetime.now(), 'No entries returned')
@@ -113,6 +114,7 @@ def get_next_event(): # calls get_events, checks events for reminder
             return get_event_status(event_list)
 
     try:
+        print('Getting fresh list of events', loop_counter)
         creds = get_credentials()
         event_list = get_events(creds, 15)
         loop_counter = 0
