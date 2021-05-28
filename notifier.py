@@ -169,7 +169,7 @@ def main():
         current_minute = datetime.datetime.now().minute
         if current_minute != last_minute:
             last_minute = current_minute
-            next_event = get_next_event(11)
+            next_event = get_next_event()
             if next_event is not None:
                 num_minutes = next_event['num_minutes']
                 summary = next_event['summary'] if 'summary' in next_event else 'No Title'
