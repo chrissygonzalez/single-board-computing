@@ -18,6 +18,7 @@ CALENDAR_ID = 'family11329664508214213018@group.calendar.google.com'
 FIRST_ALERT = 9
 SECOND_ALERT = 4
 THIRD_ALERT = 1
+EVENT_PERIOD = 20 # retrieve events this many minutes in the future
 LOOP_INTERVAL = 2 # time to rerun loop in seconds
 LOOP_MAX = 6 # number of minutes between event refetches
 CALENDAR_DEFAULT_HAS_REMINDER = True # if calendar sets a notification by default, set to True
@@ -116,7 +117,7 @@ def get_next_event(): # calls get_events, checks events for reminder
     try:
         print('Getting fresh list of events', loop_counter)
         creds = get_credentials()
-        event_list = get_events(creds, 15)
+        event_list = get_events(creds, EVENT_PERIOD)
         if loop_counter == 0:
             loop_counter += 1
         else:
