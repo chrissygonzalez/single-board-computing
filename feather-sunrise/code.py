@@ -1,5 +1,4 @@
 import random
-import math
 import time
 import board
 from analogio import AnalogIn
@@ -25,14 +24,16 @@ YELLOW = (255, 150, 0)
 WHITE = (255, 200, 150)
 BLACK = (0, 0, 0)
 AQUA = (0, 75, 100)
+BLUE = (0, 0, 150)
+PURPLE = (60, 0, 75)
 
 SCROLL_SHIFT = 8
 HOUR = 6
-MINUTE = 0
+MINUTE = 15
 
 def get_voltage(pin):
     return (pin.value * 3.3) / 65536 * 2
-    
+
 def showColor(led, color, delay):
     pixels[led] = color
     pixels.show()
@@ -63,10 +64,9 @@ def sunrise():
     time.sleep(60)
     pixels.brightness = 0.3
 
-#time_display.get_time_pixels_to_show(HOUR, MINUTE, SCROLL_SHIFT)
-time_display.show_time(HOUR, MINUTE, SCROLL_SHIFT, pixels, AQUA)
+time_display.show_time(HOUR, MINUTE, SCROLL_SHIFT, pixels, BLUE)
+time_display.show_time(HOUR, MINUTE, SCROLL_SHIFT, pixels, BLUE)
 while True:
-    #time_display.show_time(time_display.colon, SCROLL_SHIFT, pixels, AQUA)
     battery_voltage = get_voltage(vbat_voltage)
     current = rtc.datetime
     pixels.show()
