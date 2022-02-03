@@ -14,7 +14,7 @@ pixels = neopixel.NeoPixel(board.D6, 32, brightness=0.02)    # Feather wiring!
 boardPixel = neopixel.NeoPixel(board.NEOPIXEL, 1)
 
 # SET RTC ONCE
-#set_time = time.struct_time((2022, 1, 9, 18, 14, 00, 6, 9, 0))
+#set_time = time.struct_time((2022, 2, 1, 19, 16, 00, 6, 9, 0))
 #print("Setting time to:", set_time)
 #rtc.datetime = set_time
 
@@ -64,7 +64,7 @@ def sunrise():
     time.sleep(60)
     pixels.brightness = 0.3
 
-time_display.show_time(HOUR, MINUTE, SCROLL_SHIFT, pixels, BLUE)
+time_display.show_time(rtc.datetime.tm_hour, rtc.datetime.tm_min, SCROLL_SHIFT, pixels, YELLOW)
 time_display.show_time(HOUR, MINUTE, SCROLL_SHIFT, pixels, BLUE)
 while True:
     battery_voltage = get_voltage(vbat_voltage)
