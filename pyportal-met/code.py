@@ -2,6 +2,7 @@ import time
 import random
 import board
 from adafruit_pyportal import PyPortal
+from adafruit_display_shapes.circle import Circle
 
 WIDTH = board.DISPLAY.width
 HEIGHT = board.DISPLAY.height
@@ -65,15 +66,19 @@ while image_count == 0:
 
 
 pyportal.set_json_path('title')
+circle = Circle(WIDTH - 8, HEIGHT - 7, 5, fill=0)
+pyportal.splash.append(circle)
 
 while True:
     object_id = object_ids[random.randint(1, image_count)]
 
     try:
+        circle.fill = 0xFF0000
         print("retrieving url:", (OBJECT_URL + str(object_id)))
         image_response = pyportal.fetch_url(OBJECT_URL + str(object_id))
         pyportal.fetch_image(image_response)
         pyportal.set_text(image_response['title'], 0)
+        circle.fill = 0
 
     except (RuntimeError, KeyError, TypeError) as e:
         print("An error occured, retrying! -", e)
